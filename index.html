@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste JS</title>
+    <link rel="stylesheet" href="estados.php">
+    <script>
+        window.addEventListener('load', () => {
+            fetch('./estados.php').then((response) => {
+                return response.json();
+                console.log(response);
+            })
+            .then((json) => {
+                let estados = document.getElementById('estado');
+                estados.innerHTML = '';
+                for (let i = 0; i < json.length; i++) {
+                    let option = document.createElement('option');
+                    option.value = json[i].sigla;
+                    option.innerText = json[i].nome;
+                    estados.append(option);
+                }
+            });
+
+            document.getElementById('estado').addEventListener('change', () => {
+                const estado = document.getElementById('estado').value;
+                fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/'+estado+'/municipios')
+                .then((response) => {
+                    return response.json();
+                })
+                .then((json) => {
+                    let cidades = document.getElementById('cidade');
+                    cidades.innerHTML = '';
+                    for (let i = 0; i < json.length; i++) {
+                        let option = document.createElement('option');
+                        option.innerText = json[i].nome;
+                        cidades.append(option);
+                    }
+                });
+            });
+
+            document.querySelector('button').addEventListener('click', () => {
+                const dados = new FormData(document.forms[0]);
+                const config ={
+                    method: 'POST',
+                    body: dados
+                };
+
+                fetch('./cadastroTeste.php', config)
+                .then((response) => {
+                    return response.json();
+                })
+                .then((json) => {
+                    console.log(json);
+                    let p = document.querySelector('p');
+                    p.innerText = json.mensagem;
+                    if (json.status == 'ok') {
+                        p.style.color = 'blue';
+                    }else{
+                        p.style.color = 'yellow';
+                    }
+                })
+
+            });
+
+            document.forms[0].addEventListener('submit', (event) => {
+                event.preventDefault();
+            });
+
+        });
+    </script>
+</head>
+<body>
+    <form action="">
+        <label for="nome">Nome</label>
+        <input type="text" name="nome" id="nome"><br><br>
+        <label for="endereco">Endereço</label>
+        <input type="text" name="endereco" id="endereco"><br><br>
+        <label for="estado">Estado</label>
+        <select name="estado" id="estado" value="">
+            <option value=""></option>
+        </select>
+        <br><br>
+        <label for="cidade">Cidade</label>
+        <select name="cidade" id="cidade"></select><br><br>
+        <button>Salvar</button>
+    </form> 
+    <p></p>
+</body>
+</html>
